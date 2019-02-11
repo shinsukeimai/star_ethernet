@@ -18,4 +18,13 @@ todo
 todo
 
 ## Contribution
-todo
+### Setup
+
+```
+bin/setup
+```
+
+### Test
+```
+bundle exec rspec spec
+```
