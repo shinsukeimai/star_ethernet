@@ -1,4 +1,4 @@
-star_ethernet
+star_ethernet [![Build Status](https://travis-ci.org/shinsukeimai/star_ethernet.svg?branch=master)](https://travis-ci.org/shinsukeimai/star_ethernet)
 ====
 
 Star Micronics thermal printer controller via ethernet card(IFBD-HE07/08-BE07)
