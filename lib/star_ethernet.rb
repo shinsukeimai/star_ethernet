@@ -1,6 +1,5 @@
-require "star_ethernet/version"
+require 'star_ethernet/printer'
 
 module StarEthernet
-  class Error < StandardError; end
-  # Your code goes here...
+  RAW_SOCKET_PRINT_PORT = 9100
 end
