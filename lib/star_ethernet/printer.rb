@@ -4,6 +4,9 @@ require 'star_ethernet/status'
 
 module StarEthernet
   class Printer
+    RAW_SOCKET_PRINT_PORT = 9100
+    STATUS_ACQUISITION_PORT = 9101
+
     attr_reader :status
 
     def initialize(host)

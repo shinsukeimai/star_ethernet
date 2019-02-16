@@ -5,7 +5,7 @@ RSpec.describe StarEthernet::Printer do
 
   describe '#print' do
     context 'with valid condition' do
-      let!(:server) { TCPServer.open(HOST, StarEthernet::RAW_SOCKET_PRINT_PORT) }
+      let!(:server) { TCPServer.open(HOST, StarEthernet::Printer::RAW_SOCKET_PRINT_PORT) }
       let(:data) { 'hello printer' }
 
       before do
@@ -31,7 +31,7 @@ RSpec.describe StarEthernet::Printer do
 
   describe '#status' do
     context 'without any warnings and errors' do
-      let!(:server) { TCPServer.open(HOST, StarEthernet::STATUS_ACQUISITION_PORT) }
+      let!(:server) { TCPServer.open(HOST, StarEthernet::Printer::STATUS_ACQUISITION_PORT) }
       let(:printer) { StarEthernet::Printer.new(HOST) }
       let(:status) { 'valid status' }
 

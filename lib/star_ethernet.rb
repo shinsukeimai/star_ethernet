@@ -1,6 +1,8 @@
+require 'star_ethernet/command'
 require 'star_ethernet/printer'
+require 'star_ethernet/status'
+require 'star_ethernet/status_item'
+require 'star_ethernet/version'
 
 module StarEthernet
-  RAW_SOCKET_PRINT_PORT = 9100
-  STATUS_ACQUISITION_PORT = 9101
 end
