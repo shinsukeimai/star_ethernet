@@ -128,7 +128,7 @@ module StarEthernet
       [0x1b, 0x7a, n]
     end
 
-    def self.specify_lnie_spacing_to_3_mm
+    def self.specify_line_spacing_to_3_mm
       [0x1b, 0x30]
     end
 
@@ -358,7 +358,7 @@ module StarEthernet
       [0x1b, 0x74, n1 ,n2]
     end
 
-    def self.register_chainese_download_characters(c1, c2, d)
+    def self.register_chinese_download_characters(c1, c2, d)
       [0x1b, 0x72, c1, c2, *d]
     end
 
@@ -690,7 +690,7 @@ module StarEthernet
       [0x1b, 0x1d, 0x28, 0x6b, pL, pH, cn, fn, m, a, b, d]
     end
 
-    def self.compound_symbol_printe_data_in_symbol_saving_region(pL, pH, cn, fn, m)
+    def self.compound_symbol_print_data_in_symbol_saving_region(pL, pH, cn, fn, m)
       [0x1b, 0x1d, 0x28, 0x6b, pL, pH, cn, fn, m]
     end
 
