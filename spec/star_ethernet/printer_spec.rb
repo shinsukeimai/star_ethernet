@@ -53,12 +53,11 @@ RSpec.describe StarEthernet::Printer do
 
         socket.write([0x23, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00].pack('C*'))
 
-        while printer.current_status != StarEthernet::StatusItem::NormalStatus
+        while printer.current_status == nil
           # wait for response
-          # p printer.current_status
         end
 
-        expect(printer.current_status).to eq(StarEthernet::StatusItem::NormalStatus)
+        expect(printer.current_status.first).to eq(StarEthernet::StatusItem::NormalStatus)
       end
     end
   end

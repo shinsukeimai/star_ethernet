@@ -38,6 +38,8 @@ module StarEthernet
       class StateWherePaperIsPulledOut; end
     end
 
+    class NormalStatus; end
+
     def self.decode_status(status_raw_data)
       status_items = []
 
@@ -74,6 +76,8 @@ module StarEthernet
       byte7 = status_data[12..13].hex # todo
       byte8 = status_data[14..15].hex # todo
       byte9 = status_data[16..17].hex # todo
+
+      status_items.push(NormalStatus) if status_items.empty?
 
       status_items
     end
