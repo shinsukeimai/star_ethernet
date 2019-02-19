@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    star_ethernet (0.1.0)
+    star_ethernet (0.1.1)
 
 GEM
   remote: https://rubygems.org/
