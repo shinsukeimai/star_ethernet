@@ -6,8 +6,16 @@ module StarEthernet
       @statuses = []
     end
 
+    def all_statuses
+      @statuses
+    end
+
     def current_status
-      @statuses.first
+      @statuses.last
+    end
+
+    def previous_status
+      @statuses[-2]
     end
 
     def set_status(status_data)

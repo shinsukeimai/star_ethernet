@@ -1,5 +1,25 @@
 module StarEthernet
-  module StatusItem
+  class StatusItem
+    attr_reader :etb
+
+    def initialize(statuses: [])
+      @statues = statuses
+      @etb = nil
+      @time = Time.now
+    end
+
+    def has_errors?
+      false # todo
+    end
+
+    def append_status(*statuses)
+      @statues.push(statuses)
+    end
+
+    def set_etb(counter)
+      @etb = counter
+    end
+
     class HeaderStatus
       # todo
     end
@@ -38,10 +58,8 @@ module StarEthernet
       class StateWherePaperIsPulledOut; end
     end
 
-    class NormalStatus; end
-
     def self.decode_status(status_raw_data)
-      status_items = []
+      status_item = StatusItem.new
 
       status_data = status_raw_data.unpack('H*').first
 
@@ -49,37 +67,39 @@ module StarEthernet
       byte2 = status_data[2..3].hex # todo version status
 
       byte3 = status_data[4..5].hex
-      status_items.push(PrinterStatus::OfflineBySwitchInput)   if byte3 & 0b01000000 > 0
-      status_items.push(PrinterStatus::CoverOpen)              if byte3 & 0b00100000 > 0
-      status_items.push(PrinterStatus::Offline)                if byte3 & 0b00001000 > 0
-      status_items.push(PrinterStatus::ConversionSwitchClosed) if byte3 & 0b00000100 > 0
-      status_items.push(PrinterStatus::EtbCommandExecuted)     if byte3 & 0b00000010 > 0
+      status_item.append_status(PrinterStatus::OfflineBySwitchInput)   if byte3 & 0b01000000 > 0
+      status_item.append_status(PrinterStatus::CoverOpen)              if byte3 & 0b00100000 > 0
+      status_item.append_status(PrinterStatus::Offline)                if byte3 & 0b00001000 > 0
+      status_item.append_status(PrinterStatus::ConversionSwitchClosed) if byte3 & 0b00000100 > 0
+      status_item.append_status(PrinterStatus::EtbCommandExecuted)     if byte3 & 0b00000010 > 0
 
       byte4 = status_data[6..7].hex
-      status_items.push(ErrorStatus::StoppedByHighHeadTemperature) if byte4 & 0b01000000 > 0
-      status_items.push(ErrorStatus::NonRecoverableError)          if byte4 & 0b00100000 > 0
-      status_items.push(ErrorStatus::AutoCutterError)              if byte4 & 0b00001000 > 0
-      status_items.push(ErrorStatus::MechanicalError)              if byte4 & 0b00000100 > 0
+      status_item.append_status(ErrorStatus::StoppedByHighHeadTemperature) if byte4 & 0b01000000 > 0
+      status_item.append_status(ErrorStatus::NonRecoverableError)          if byte4 & 0b00100000 > 0
+      status_item.append_status(ErrorStatus::AutoCutterError)              if byte4 & 0b00001000 > 0
+      status_item.append_status(ErrorStatus::MechanicalError)              if byte4 & 0b00000100 > 0
 
       byte5 = status_data[8..9].hex
-      status_items.push(ErrorStatus::ReceiveBufferOverflow) if byte5 & 0b01000000 > 0
-      status_items.push(ErrorStatus::CommandError)          if byte5 & 0b00100000 > 0
-      status_items.push(ErrorStatus::BmError)               if byte5 & 0b00001000 > 0
-      status_items.push(ErrorStatus::PresenterPageJamError) if byte5 & 0b00000100 > 0
-      status_items.push(ErrorStatus::HeadUpError)           if byte5 & 0b00000010 > 0
+      status_item.append_status(ErrorStatus::ReceiveBufferOverflow) if byte5 & 0b01000000 > 0
+      status_item.append_status(ErrorStatus::CommandError)          if byte5 & 0b00100000 > 0
+      status_item.append_status(ErrorStatus::BmError)               if byte5 & 0b00001000 > 0
+      status_item.append_status(ErrorStatus::PresenterPageJamError) if byte5 & 0b00000100 > 0
+      status_item.append_status(ErrorStatus::HeadUpError)           if byte5 & 0b00000010 > 0
 
       byte6 = status_data[10..11].hex
-      status_items.push(SensorStatus::PaperEnd)            if byte6 & 0b00001000 > 0
-      status_items.push(SensorStatus::PaperNearInsideEnd)  if byte6 & 0b00000100 > 0
-      status_items.push(SensorStatus::PaperNearOutsideEnd) if byte6 & 0b00000010 > 0
+      status_item.append_status(SensorStatus::PaperEnd)            if byte6 & 0b00001000 > 0
+      status_item.append_status(SensorStatus::PaperNearInsideEnd)  if byte6 & 0b00000100 > 0
+      status_item.append_status(SensorStatus::PaperNearOutsideEnd) if byte6 & 0b00000010 > 0
 
       byte7 = status_data[12..13].hex # todo
-      byte8 = status_data[14..15].hex # todo
+
+      byte8 = status_data[14..15].hex
+      etb = ((byte8 >> 1) & 0b00000111) + ((byte8 >> 2) & 0b00011000)
+      status_item.set_etb(etb)
+
       byte9 = status_data[16..17].hex # todo
 
-      status_items.push(NormalStatus) if status_items.empty?
-
-      status_items
+      status_item
     end
   end
 end
