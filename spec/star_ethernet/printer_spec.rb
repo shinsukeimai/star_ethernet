@@ -4,13 +4,90 @@ RSpec.describe StarEthernet::Printer do
   HOST = '127.0.0.1'
 
   describe '#print' do
+    let!(:print_server) { TCPServer.open(HOST, StarEthernet::Printer::RAW_SOCKET_PRINT_PORT) }
+    let!(:status_server) { TCPServer.open(HOST, StarEthernet::Printer::STATUS_ACQUISITION_PORT) }
+    let(:data) { 'print data' }
+
+    before do
+      Thread.new do
+        StarEthernet::Printer.new(HOST).print(data)
+      end
+    end
+
+    after do
+      print_server.close
+      status_server.close
+    end
+
+    context 'with valid condition' do
+      it do
+        print_socket = print_server.accept
+
+        expect_cmd = StarEthernet::Command.initialize_print_sequence
+        initialize_print_sequence_cmd = print_socket.read(expect_cmd.size)
+        expect(initialize_print_sequence_cmd).to eq(expect_cmd)
+
+        status_socket = status_server.accept
+        expect_cmd = StarEthernet::Command.status_acquisition
+        status_acquisition_cmd = status_socket.read(expect_cmd.size)
+        expect(status_acquisition_cmd).to eq(expect_cmd)
+        status_socket.write([0x23, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00].pack('C*'))
+        status_socket.close
+
+        expect_cmd = StarEthernet::Command.update_asb_etb_status
+        update_asb_etb_status_cmd = print_socket.read(expect_cmd.size)
+        expect(update_asb_etb_status_cmd).to eq(expect_cmd)
+
+        status_socket = status_server.accept
+        expect_cmd = StarEthernet::Command.status_acquisition
+        status_acquisition_cmd = status_socket.read(expect_cmd.size)
+        expect(status_acquisition_cmd).to eq(expect_cmd)
+        status_socket.write([0x23, 0x86, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00].pack('C*')) # count up ETB
+        status_socket.close
+
+        expect_cmd = StarEthernet::Command.start_document
+        start_document_cmd = print_socket.read(expect_cmd.size)
+        expect(start_document_cmd).to eq(expect_cmd)
+
+        receive_data = print_socket.read(data.size)
+        expect(receive_data).to eq(data)
+
+        expect_cmd = StarEthernet::Command.update_asb_etb_status
+        update_asb_etb_status_cmd = print_socket.read(expect_cmd.size)
+        expect(update_asb_etb_status_cmd).to eq(expect_cmd)
+
+        expect_cmd = StarEthernet::Command.end_document
+        end_document_cmd = print_socket.read(expect_cmd.size)
+        expect(end_document_cmd).to eq(expect_cmd)
+
+        status_socket = status_server.accept
+        expect_cmd = StarEthernet::Command.status_acquisition
+        status_acquisition_cmd = status_socket.read(expect_cmd.size)
+        expect(status_acquisition_cmd).to eq(expect_cmd)
+        status_socket.write([0x23, 0x86, 0x02, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00].pack('C*')) # count up ETB
+        status_socket.close
+
+        expect(print_socket.eof?).to eq(true)
+      end
+    end
+
+    context 'with errors before printing' do
+
+    end
+
+    context 'with errors in printing' do
+
+    end
+  end
+
+  describe '#send_command' do
     context 'with valid condition' do
       let!(:server) { TCPServer.open(HOST, StarEthernet::Printer::RAW_SOCKET_PRINT_PORT) }
       let(:data) { 'hello printer' }
 
       before do
         Thread.new do
-          StarEthernet::Printer.new(HOST).print(data)
+          StarEthernet::Printer.new(HOST).send_command(data)
         end
       end
 
@@ -20,11 +97,9 @@ RSpec.describe StarEthernet::Printer do
 
       it 'accepts data' do
         socket = server.accept
-        socket.write([0x23, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00].pack('C*'))
+        socket.write([0x23, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00].pack('C*'))
 
         expect(socket.read(data.size)).to eq(data)
-
-        expect(socket.eof?).to eq(true)
       end
     end
   end
@@ -47,17 +122,11 @@ RSpec.describe StarEthernet::Printer do
 
       it 'receive status' do
         socket = server.accept
-        cmd = socket.read(26)
-
-        expect(cmd.unpack('H*').first).to eq('3200000000000000000000000000000000000000000000000000')
-
-        socket.write([0x23, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00].pack('C*'))
-
-        while printer.current_status == nil
-          # wait for response
-        end
-
-        expect(printer.current_status.first).to eq(StarEthernet::StatusItem::NormalStatus)
+        expect_cmd = StarEthernet::Command.status_acquisition
+        status_acquisition_cmd = socket.read(expect_cmd.size)
+        expect(status_acquisition_cmd).to eq(expect_cmd)
+        socket.write([0x23, 0x86, 0x02, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00].pack('C*')) # count up ETB
+        socket.close
       end
     end
   end

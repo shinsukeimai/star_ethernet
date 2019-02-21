@@ -1,5 +1,25 @@
 module StarEthernet
   module Command
+    def self.status_acquisition
+      ([0x32] + 50.times.map { 0x00 }).pack('C*')
+    end
+
+    def self.initialize_print_sequence
+      [
+        self.quit_raster_mode,
+        self.send_print_end_counter_initialize(0x04, 0x00,0x00),
+      ].join
+    end
+
+    def self.start_document
+      self.send_print_end_counter_initialize(0x03, 0x00, 0x00)
+    end
+
+    def self.end_document
+      self.send_print_end_counter_initialize(0x04, 0x00, 0x00)
+    end
+
+
     # Standard Command
     ## Font style and Character Set
     def self.select_font(n)
