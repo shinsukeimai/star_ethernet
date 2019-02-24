@@ -1,24 +1,33 @@
 module StarEthernet
   class StatusItem
-    attr_reader :etb
+    attr_reader :statuses, :time
+    attr_writer :purpose
+    attr_accessor :etb
 
     def initialize(statuses: [])
-      @statues = statuses
+      @statuses = statuses
       @etb = nil
       @time = Time.now
+      @purpose = nil
     end
 
-    def has_errors?
-      false # todo
+    def offline?
+      @statuses.include?(PrinterStatus::Offline)
     end
 
-    def append_status(*statuses)
-      @statues.push(statuses)
+    def append_status(status)
+      @statuses.push(status)
     end
 
-    def set_etb(counter)
-      @etb = counter
+    def message
+      msg = @statuses.empty? ?
+        "[#{@time.to_s}] Normal status" :
+        "[#{@time.to_s}] #{@statuses.map{ |status| status.to_s }.join(', ')}"
+      msg += " etb:#{@etb}"
+      msg += " (#{@purpose})" if @purpose
+      msg
     end
+
 
     class HeaderStatus
       # todo
@@ -94,8 +103,7 @@ module StarEthernet
       byte7 = status_data[12..13].hex # todo
 
       byte8 = status_data[14..15].hex
-      etb = ((byte8 >> 1) & 0b00000111) + ((byte8 >> 2) & 0b00011000)
-      status_item.set_etb(etb)
+      status_item.etb = ((byte8 >> 1) & 0b00000111) + ((byte8 >> 2) & 0b00011000)
 
       byte9 = status_data[16..17].hex # todo
 
