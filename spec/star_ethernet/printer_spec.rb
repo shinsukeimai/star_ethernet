@@ -8,19 +8,19 @@ RSpec.describe StarEthernet::Printer do
     let!(:status_server) { TCPServer.open(HOST, StarEthernet::Printer::STATUS_ACQUISITION_PORT) }
     let(:data) { 'print data' }
 
-    before do
-      Thread.new do
-        StarEthernet::Printer.new(HOST).print(data)
-      end
-    end
-
     after do
       print_server.close
       status_server.close
     end
 
     context 'with valid condition' do
-      it do
+      before do
+        Thread.new do
+          StarEthernet::Printer.new(HOST).print(data)
+        end
+      end
+
+      it 'completes print sequence' do
         print_socket = print_server.accept
 
         expect_cmd = StarEthernet::Command.initialize_print_sequence
@@ -72,11 +72,70 @@ RSpec.describe StarEthernet::Printer do
     end
 
     context 'with errors before printing' do
+      let(:printer) { StarEthernet::Printer.new(HOST) }
 
+      before do
+        Thread.new do
+          print_socket = print_server.accept
+          status_socket = status_server.accept
+
+          expect_cmd = StarEthernet::Command.initialize_print_sequence
+          print_socket.read(expect_cmd.size)
+
+          expect_cmd = StarEthernet::Command.status_acquisition
+          status_socket.read(expect_cmd.size)
+          status_socket.write([0x23, 0x86, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00].pack('C*'))
+        end
+      end
+
+      it 'raises error' do
+        expect { printer.print(data) }.to raise_error(StarEthernet::PrinterOffline)
+      end
     end
 
     context 'with errors in printing' do
+      let(:printer) { StarEthernet::Printer.new(HOST, retry_counts: 1) }
 
+      before do
+        Thread.new do
+          print_socket = print_server.accept
+
+          expect_cmd = StarEthernet::Command.initialize_print_sequence
+          print_socket.read(expect_cmd.size)
+
+          status_socket = status_server.accept
+          expect_cmd = StarEthernet::Command.status_acquisition
+          status_socket.read(expect_cmd.size)
+          status_socket.write([0x23, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00].pack('C*'))
+          status_socket.close
+
+          expect_cmd = StarEthernet::Command.update_asb_etb_status
+          print_socket.read(expect_cmd.size)
+
+          status_socket = status_server.accept
+          expect_cmd = StarEthernet::Command.status_acquisition
+          status_socket.read(expect_cmd.size)
+          status_socket.write([0x23, 0x86, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00].pack('C*'))
+          status_socket.close
+
+          expect_cmd = StarEthernet::Command.start_document
+          print_socket.read(expect_cmd.size)
+
+          print_socket.read(data.size)
+
+          expect_cmd = StarEthernet::Command.update_asb_etb_status
+          print_socket.read(expect_cmd.size)
+
+          status_socket = status_server.accept
+          expect_cmd = StarEthernet::Command.status_acquisition
+          status_socket.read(expect_cmd.size)
+          status_socket.write([0x23, 0x86, 0x02, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00].pack('C*'))
+        end
+      end
+
+      it 'raises error' do
+        expect { printer.print(data) }.to raise_error(StarEthernet::PrintFailed)
+      end
     end
   end
 
@@ -108,11 +167,10 @@ RSpec.describe StarEthernet::Printer do
     context 'without any warnings and errors' do
       let!(:server) { TCPServer.open(HOST, StarEthernet::Printer::STATUS_ACQUISITION_PORT) }
       let(:printer) { StarEthernet::Printer.new(HOST) }
-      let(:status) { 'valid status' }
 
       before do
         Thread.new do
-          printer.fetch_status
+          printer.fetch_status('purpose message')
         end
       end
 
@@ -125,7 +183,7 @@ RSpec.describe StarEthernet::Printer do
         expect_cmd = StarEthernet::Command.status_acquisition
         status_acquisition_cmd = socket.read(expect_cmd.size)
         expect(status_acquisition_cmd).to eq(expect_cmd)
-        socket.write([0x23, 0x86, 0x02, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00].pack('C*')) # count up ETB
+        socket.write([0x23, 0x86, 0x02, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00].pack('C*'))
         socket.close
       end
     end

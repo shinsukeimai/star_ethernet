@@ -1,6 +1,7 @@
 require 'socket'
 
 require 'star_ethernet/status'
+require 'star_ethernet/exceptions'
 
 module StarEthernet
   class Printer
@@ -10,20 +11,11 @@ module StarEthernet
     FETCH_TIME_INTERVAL = 0.1
     RETRY_COUNTS = 300
 
-    module PrintError
-      class EtbCountUpFailed < StandardError; end
-      class PrintFailed < EtbCountUpFailed; end
-    end
-
-    attr_reader :status
+    attr_reader :status, :host
 
     def initialize(host, nsb: false, asb: false, interval: FETCH_TIME_INTERVAL, retry_counts: RETRY_COUNTS)
-      @host = host
-      @status = StarEthernet::Status.new
-      @nsb = nsb
-      @asb = asb
-      @interval = interval
-      @retry_counts = retry_counts
+      @host, @nsb, @asb, @interval, @retry_counts = host, nsb, asb, interval, retry_counts
+      @status = StarEthernet::Status.new(self)
     end
 
     def print(data)
@@ -32,22 +24,26 @@ module StarEthernet
 
         if @nsb
           nbs_status = socket.read(ASB_STATUS_SIZE)
-          @status.set_status(nbs_status)
+          @status.set_status(nbs_status, 'receive nbs status')
         end
 
         socket.print(StarEthernet::Command.initialize_print_sequence)
 
-        fetch_status
+        fetch_status('fetch etb status for checking counting up after initializing print sequence')
+
+        if current_status.offline?
+          raise StarEthernet::PrinterOffline.new(@status.full_messages)
+        end
 
         socket.print(StarEthernet::Command.update_asb_etb_status)
 
         @retry_counts.times do |index|
           sleep @interval
-          fetch_status
+          fetch_status('fetch etb status for reserve etb count before printing')
 
           break if etb_incremented?
           if index == @retry_counts - 1
-            raise PrintError::EtbCountUpFailed
+            raise StarEthernet::EtbCountUpFailed.new(@status.full_messages)
           end
         end
 
@@ -61,14 +57,12 @@ module StarEthernet
 
         @retry_counts.times do |index|
           sleep @interval
-          fetch_status
+          fetch_status('fetch etb status for checking print success')
           break if etb_incremented?
           if index == @retry_counts - 1
-            raise PrintError::PrintFailed
+            raise StarEthernet::PrintFailed.new(@status.full_messages)
           end
         end
-      rescue PrintError
-
       ensure
         socket.close
       end
@@ -84,11 +78,11 @@ module StarEthernet
       socket.close
     end
 
-    def fetch_status
+    def fetch_status(purpose = '')
       socket = socket(STATUS_ACQUISITION_PORT)
       socket.print(StarEthernet::Command.status_acquisition)
       asb_status = socket.read(ASB_STATUS_SIZE)
-      @status.set_status(asb_status)
+      @status.set_status(asb_status, purpose)
       socket.close
       @status.current_status
     end
