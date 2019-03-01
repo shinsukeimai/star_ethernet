@@ -8,7 +8,7 @@ module StarEthernet
     RAW_SOCKET_PRINT_PORT = 9100
     STATUS_ACQUISITION_PORT = 9101
     ASB_STATUS_SIZE = 9
-    FETCH_TIME_INTERVAL = 0.1
+    FETCH_TIME_INTERVAL = 1
     RETRY_COUNTS = 300
 
     attr_reader :status, :host
