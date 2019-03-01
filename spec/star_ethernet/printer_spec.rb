@@ -1,11 +1,11 @@
 require 'socket'
 
 RSpec.describe StarEthernet::Printer do
-  HOST = '127.0.0.1'
+  let(:host) { '127.0.0.1' }
 
   describe '#print' do
-    let!(:print_server) { TCPServer.open(HOST, StarEthernet::Printer::RAW_SOCKET_PRINT_PORT) }
-    let!(:status_server) { TCPServer.open(HOST, StarEthernet::Printer::STATUS_ACQUISITION_PORT) }
+    let!(:print_server) { TCPServer.open(host, StarEthernet::Printer::RAW_SOCKET_PRINT_PORT) }
+    let!(:status_server) { TCPServer.open(host, StarEthernet::Printer::STATUS_ACQUISITION_PORT) }
     let(:data) { 'print data' }
 
     after do
@@ -16,7 +16,7 @@ RSpec.describe StarEthernet::Printer do
     context 'with valid condition' do
       before do
         Thread.new do
-          StarEthernet::Printer.new(HOST).print(data)
+          StarEthernet::Printer.new(host).print(data)
         end
       end
 
@@ -72,7 +72,7 @@ RSpec.describe StarEthernet::Printer do
     end
 
     context 'with errors before printing' do
-      let(:printer) { StarEthernet::Printer.new(HOST) }
+      let(:printer) { StarEthernet::Printer.new(host) }
 
       before do
         Thread.new do
@@ -94,7 +94,7 @@ RSpec.describe StarEthernet::Printer do
     end
 
     context 'with errors in printing' do
-      let(:printer) { StarEthernet::Printer.new(HOST, retry_counts: 1) }
+      let(:printer) { StarEthernet::Printer.new(host, retry_counts: 1) }
 
       before do
         Thread.new do
@@ -141,12 +141,12 @@ RSpec.describe StarEthernet::Printer do
 
   describe '#send_command' do
     context 'with valid condition' do
-      let!(:server) { TCPServer.open(HOST, StarEthernet::Printer::RAW_SOCKET_PRINT_PORT) }
+      let!(:server) { TCPServer.open(host, StarEthernet::Printer::RAW_SOCKET_PRINT_PORT) }
       let(:data) { 'hello printer' }
 
       before do
         Thread.new do
-          StarEthernet::Printer.new(HOST).send_command(data)
+          StarEthernet::Printer.new(host).send_command(data)
         end
       end
 
@@ -165,8 +165,8 @@ RSpec.describe StarEthernet::Printer do
 
   describe '#status' do
     context 'without any warnings and errors' do
-      let!(:server) { TCPServer.open(HOST, StarEthernet::Printer::STATUS_ACQUISITION_PORT) }
-      let(:printer) { StarEthernet::Printer.new(HOST) }
+      let!(:server) { TCPServer.open(host, StarEthernet::Printer::STATUS_ACQUISITION_PORT) }
+      let(:printer) { StarEthernet::Printer.new(host) }
 
       before do
         Thread.new do
