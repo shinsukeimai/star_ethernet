@@ -41,7 +41,7 @@ module StarEthernet
           sleep @interval
           fetch_status('fetch etb status for reserve etb count before printing')
 
-          break if etb_incremented?
+          break if @status.etb_incremented?
           if index == @retry_counts - 1
             raise StarEthernet::EtbCountUpFailed.new(@status.full_messages)
           end
@@ -58,7 +58,8 @@ module StarEthernet
         @retry_counts.times do |index|
           sleep @interval
           fetch_status('fetch etb status for checking print success')
-          break if etb_incremented?
+
+          break if @status.etb_incremented?
           if index == @retry_counts - 1
             raise StarEthernet::PrintFailed.new(@status.full_messages)
           end
@@ -87,24 +88,8 @@ module StarEthernet
       @status.current_status
     end
 
-    def etb_incremented?
-      current_etb == previous_etb + 1
-    end
-
-    def current_etb
-      current_status.etb
-    end
-
-    def previous_etb
-      previous_status.etb
-    end
-
     def current_status
       @status.current_status
-    end
-
-    def previous_status
-      @status.previous_status
     end
 
     def socket(port)

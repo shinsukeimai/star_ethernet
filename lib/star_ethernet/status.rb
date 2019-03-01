@@ -17,6 +17,15 @@ module StarEthernet
       @status_items[-2]
     end
 
+    def etb_incremented?
+      return false if previous_status.nil?
+      if previous_status.etb == 31 # ETB overflow
+        current_status.etb == 0
+      else
+        current_status.etb == previous_status.etb + 1
+      end
+    end
+
     def set_status(status_data, purpose = '')
       current_status = StatusItem.decode_status(status_data)
       current_status.purpose = purpose
