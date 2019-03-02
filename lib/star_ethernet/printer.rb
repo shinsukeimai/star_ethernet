@@ -1,4 +1,5 @@
 require 'socket'
+require 'net/telnet'
 
 require 'star_ethernet/status'
 require 'star_ethernet/exceptions'
@@ -88,12 +89,25 @@ module StarEthernet
       @status.current_status
     end
 
+    def reboot
+      telnet.cmd('String' => '98', 'Match' => /(.)*Selection: /)
+      telnet.cmd('String' => '2', 'Match' => /(.)*Selection: /)
+    end
+
     def current_status
       @status.current_status
     end
 
     def socket(port)
       TCPSocket.new(@host, port)
+    end
+
+    def telnet
+      telnet = Net::Telnet.new('Host' => @host)
+      telnet.waitfor(/(.)*login: /)
+      telnet.cmd('String' => 'root', 'Match' => /(.)*Password: /)
+      telnet.cmd('String' => 'public', 'Match' => /(.)*Selection: /)
+      telnet
     end
   end
 end
