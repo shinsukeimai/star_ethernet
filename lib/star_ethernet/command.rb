@@ -20,6 +20,60 @@ module StarEthernet
     end
 
 
+    def self.normal_font_size
+      self.set_cancel_the_double_wide_high(0x00, 0x00)
+    end
+
+    def self.double_font_size
+      self.set_cancel_the_double_wide_high(0x01, 0x01)
+    end
+
+    def self.triple_font_size
+      self.set_cancel_the_double_wide_high(0x02, 0x02)
+    end
+
+    def self.quadruple_font_size
+      self.set_cancel_the_double_wide_high(0x03, 0x03)
+    end
+
+    def self.quintuple_font_size
+      self.set_cancel_the_double_wide_high(0x04, 0x04)
+    end
+
+    def self.sextuple_font_size
+      self.set_cancel_the_double_wide_high(0x05, 0x05)
+    end
+
+
+    def self.align_left
+      specify_position_alignment(0x00)
+    end
+
+    def self.align_center
+      specify_position_alignment(0x01)
+    end
+
+    def self.align_right
+      specify_position_alignment(0x02)
+    end
+
+    def self.full_cut_current_line
+      auto_cutter(0x00)
+    end
+
+    def self.partial_cut_current_line
+      auto_cutter(0x01)
+    end
+
+    def self.full_cut_after_line_buffer
+      auto_cutter(0x02)
+    end
+
+    def self.partial_cut_after_line_buffer
+      auto_cutter(0x03)
+    end
+
+
     # Standard Command
     ## Font style and Character Set
     def self.select_font(n)
