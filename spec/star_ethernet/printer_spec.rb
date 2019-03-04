@@ -4,8 +4,8 @@ RSpec.describe StarEthernet::Printer do
   let(:host) { '127.0.0.1' }
 
   describe '#print' do
-    let!(:print_server) { TCPServer.open(host, StarEthernet::Printer::RAW_SOCKET_PRINT_PORT) }
-    let!(:status_server) { TCPServer.open(host, StarEthernet::Printer::STATUS_ACQUISITION_PORT) }
+    let!(:print_server) { TCPServer.open(host, StarEthernet.configuration.raw_socket_print_port) }
+    let!(:status_server) { TCPServer.open(host, StarEthernet.configuration.status_acquisition_port) }
     let(:data) { 'print data' }
 
     after do
@@ -94,9 +94,11 @@ RSpec.describe StarEthernet::Printer do
     end
 
     context 'with errors in printing' do
-      let(:printer) { StarEthernet::Printer.new(host, retry_counts: 1) }
+      let(:printer) { StarEthernet::Printer.new(host) }
 
       before do
+        StarEthernet.configuration.retry_counts = 1
+
         Thread.new do
           print_socket = print_server.accept
 
@@ -133,6 +135,10 @@ RSpec.describe StarEthernet::Printer do
         end
       end
 
+      after do
+        StarEthernet.configuration.set_default
+      end
+
       it 'raises error' do
         expect { printer.print(data) }.to raise_error(StarEthernet::PrintFailed)
       end
@@ -141,7 +147,7 @@ RSpec.describe StarEthernet::Printer do
 
   describe '#send_command' do
     context 'with valid condition' do
-      let!(:server) { TCPServer.open(host, StarEthernet::Printer::RAW_SOCKET_PRINT_PORT) }
+      let!(:server) { TCPServer.open(host, StarEthernet.configuration.raw_socket_print_port) }
       let(:data) { 'hello printer' }
 
       before do
@@ -165,7 +171,7 @@ RSpec.describe StarEthernet::Printer do
 
   describe '#status' do
     context 'without any warnings and errors' do
-      let!(:server) { TCPServer.open(host, StarEthernet::Printer::STATUS_ACQUISITION_PORT) }
+      let!(:server) { TCPServer.open(host, StarEthernet.configuration.status_acquisition_port) }
       let(:printer) { StarEthernet::Printer.new(host) }
 
       before do
