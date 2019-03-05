@@ -76,19 +76,19 @@ module StarEthernet
 
 
     def self.add_under_line
-      select_cancel_underling_mode(0x00)
-    end
-
-    def self.remove_under_line
       select_cancel_underling_mode(0x01)
     end
 
+    def self.remove_under_line
+      select_cancel_underling_mode(0x00)
+    end
+
     def self.add_upper_line
-      specify_cancel_upperline(0x00)
+      specify_cancel_upperline(0x01)
     end
 
     def self.remove_upper_line
-      specify_cancel_upperline(0x01)
+      specify_cancel_upperline(0x00)
     end
 
 
