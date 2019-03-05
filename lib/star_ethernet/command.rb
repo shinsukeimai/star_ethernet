@@ -57,6 +57,7 @@ module StarEthernet
       specify_position_alignment(0x02)
     end
 
+
     def self.full_cut_current_line
       auto_cutter(0x00)
     end
@@ -71,6 +72,23 @@ module StarEthernet
 
     def self.partial_cut_after_line_buffer
       auto_cutter(0x03)
+    end
+
+
+    def self.add_under_line
+      select_cancel_underling_mode(0x00)
+    end
+
+    def self.remove_under_line
+      select_cancel_underling_mode(0x01)
+    end
+
+    def self.add_upper_line
+      specify_cancel_upperline(0x00)
+    end
+
+    def self.remove_upper_line
+      specify_cancel_upperline(0x01)
     end
 
 
