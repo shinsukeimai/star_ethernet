@@ -1,6 +1,6 @@
 module StarEthernet
   class Config
-    attr_accessor :raw_socket_print_port, :status_acquisition_port, :telnet_port
+    attr_accessor :raw_socket_print_port, :status_acquisition_port, :telnet_port,
       :asb_status_size, :fetch_time_interval, :retry_counts, :asb, :nsb
 
     def initialize
