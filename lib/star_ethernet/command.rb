@@ -91,6 +91,16 @@ module StarEthernet
       specify_cancel_upperline(0x00)
     end
 
+    def self.print_qr(text, mistake_correction_level: 0x00, cell_size: 0x00)
+      nH, nL = text.bytesize.divmod(256)
+      [
+        set_qr_code_mistake_correction_level(mistake_correction_level),
+        set_qr_code_cell_size(cell_size),
+        set_qr_code_data_auto_setting(0x00, nL, nH, text),
+        print_qr_code,
+      ].join
+    end
+
 
     # Standard Command
     ## Font style and Character Set
@@ -729,11 +739,11 @@ module StarEthernet
     end
 
     def self.set_qr_code_data_auto_setting(m, nL, nH, d)
-      [0x1b, 0x1d, 0x79, 0x44, 0x31, m, nL, nH, *d].pack('C*')
+      [0x1b, 0x1d, 0x79, 0x44, 0x31, m, nL, nH].pack('C*') + d
     end
 
     def self.set_qr_code_data_manual_setting(a, m1, n1L, n1H, d)
-      [0x1b, 0x1d, 0x79, 0x44, 0x32, a, m1, n1L, n1H, *d].pack('C*')
+      [0x1b, 0x1d, 0x79, 0x44, 0x32, a, m1, n1L, n1H].pack('C*') + d
     end
 
     def self.print_qr_code
