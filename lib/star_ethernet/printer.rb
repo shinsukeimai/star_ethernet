@@ -97,7 +97,7 @@ module StarEthernet
     end
 
     def telnet
-      telnet = Net::Telnet.new('Host' => @host)
+      telnet = Net::Telnet.new('Host' => @host, 'Port' => StarEthernet.configuration.telnet_port)
       telnet.waitfor(/(.)*login: /)
       telnet.cmd('String' => 'root', 'Match' => /(.)*Password: /)
       telnet.cmd('String' => 'public', 'Match' => /(.)*Selection: /)
