@@ -1,5 +1,4 @@
 require 'socket'
-require 'openssl'
 
 require 'net/telnet'
 
@@ -95,14 +94,13 @@ module StarEthernet
     end
 
     def socket(port)
-      if StarEthernet::configuration.ssl
-        ssl = OpenSSL::SSL::SSLSocket.new(TCPSocket.new(@host, port))
-        ssl.hostname = @host
-        ssl.connect
-        ssl
-      else
-        TCPSocket.new(@host, port)
-      end
+      @custom_socket ?
+        @custom_socket.call(@host, port) :
+        TCPSocket.new(host, port)
+    end
+
+    def set_custom_socket(&socket)
+      @custom_socket = socket
     end
 
     def telnet
