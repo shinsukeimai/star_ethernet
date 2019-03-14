@@ -1,14 +1,14 @@
 PATH
   remote: .
   specs:
-    star_ethernet (0.1.7)
+    star_ethernet (0.1.8)
       net-telnet
 
 GEM
   remote: https://rubygems.org/
   specs:
     diff-lcs (1.3)
-    net-telnet (0.1.1)
+    net-telnet (0.2.0)
     rake (12.3.2)
     rspec (3.8.0)
       rspec-core (~> 3.8.0)

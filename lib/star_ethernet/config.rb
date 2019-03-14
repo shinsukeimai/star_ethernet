@@ -1,7 +1,7 @@
 module StarEthernet
   class Config
     attr_accessor :raw_socket_print_port, :status_acquisition_port, :telnet_port,
-      :asb_status_size, :fetch_time_interval, :retry_counts, :asb, :nsb
+      :asb_status_size, :fetch_time_interval, :retry_counts, :asb, :nsb, :ssl
 
     def initialize
       set_default
@@ -16,6 +16,7 @@ module StarEthernet
       @retry_counts            = 300
       @asb                     = false
       @nsb                     = false
+      @ssl                     = false
     end
   end
 end
