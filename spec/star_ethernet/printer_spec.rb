@@ -194,4 +194,36 @@ RSpec.describe StarEthernet::Printer do
       end
     end
   end
+
+  describe '#socket' do
+    let!(:print_server) { TCPServer.open(host, port) }
+
+    let(:printer) { StarEthernet::Printer.new(host) }
+
+    after do
+      print_server.close
+    end
+
+    context 'without custom socket' do
+      let(:port) { 20000 }
+
+      it 'uses default socket' do
+        expect { printer.socket(port) }.not_to raise_error
+      end
+    end
+
+    context 'with custom socket' do
+      let(:port) { 20001 }
+
+      before do
+        printer.set_custom_socket do |host, port|
+          TCPSocket.new(host, port)
+        end
+      end
+
+      it 'uses custom socket' do
+        expect { printer.socket(port) }.not_to raise_error
+      end
+    end
+  end
 end
