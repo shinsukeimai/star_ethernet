@@ -453,7 +453,7 @@ module StarEthernet
     end
 
     def self.set_2_byte_kanji_character_left_right_spaces(n1, n2)
-      [0x1b, 0x73, 0x73, n1, n2].pack('C*')
+      [0x1b, 0x73, n1, n2].pack('C*')
     end
 
     def self.set_1_byte_kanji_character_left_right_spaces(n1, n2)
