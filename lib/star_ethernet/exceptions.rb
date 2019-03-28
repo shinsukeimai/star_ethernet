@@ -5,6 +5,8 @@ module StarEthernet
     end
   end
 
+  class StatusFetchFailed < PrinterError; end
+
   class EtbCountUpFailed < PrinterError; end
 
   class PrintFailed < EtbCountUpFailed; end

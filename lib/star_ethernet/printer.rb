@@ -76,12 +76,16 @@ module StarEthernet
     end
 
     def fetch_status(purpose = '')
-      socket = socket(StarEthernet.configuration.status_acquisition_port)
-      socket.print(StarEthernet::Command.status_acquisition)
-      asb_status = socket.read(StarEthernet.configuration.asb_status_size)
-      @status.set_status(asb_status, purpose)
-      socket.close
-      @status.current_status
+      begin
+        socket = socket(StarEthernet.configuration.status_acquisition_port)
+        socket.print(StarEthernet::Command.status_acquisition)
+        asb_status = socket.read(StarEthernet.configuration.asb_status_size)
+        @status.set_status(asb_status, purpose)
+        socket.close
+        @status.current_status
+      rescue => e
+          raise StarEthernet::StatusFetchFailed.new(e.full_message)
+        end
     end
 
     def reboot

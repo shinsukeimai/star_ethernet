@@ -170,9 +170,10 @@ RSpec.describe StarEthernet::Printer do
   end
 
   describe '#status' do
+    let(:printer) { StarEthernet::Printer.new(host) }
+
     context 'without any warnings and errors' do
       let!(:server) { TCPServer.open(host, StarEthernet.configuration.status_acquisition_port) }
-      let(:printer) { StarEthernet::Printer.new(host) }
 
       before do
         Thread.new do
@@ -191,6 +192,16 @@ RSpec.describe StarEthernet::Printer do
         expect(status_acquisition_cmd).to eq(expect_cmd)
         socket.write([0x23, 0x86, 0x02, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00].pack('C*'))
         socket.close
+      end
+    end
+
+    context 'when errors are raised' do
+      before do
+        allow(printer).to receive(:socket).and_raise(StandardError)
+      end
+
+      it 'raises exception' do
+        expect { printer.fetch_status('purpose message') }.to raise_error(StarEthernet::StatusFetchFailed)
       end
     end
   end
