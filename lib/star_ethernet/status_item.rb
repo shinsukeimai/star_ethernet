@@ -19,6 +19,10 @@ module StarEthernet
       @statuses.push(status)
     end
 
+    def unhealthy?
+      @statuses.reject{ |s| s.== PrinterStatus::EtbCommandExecuted}.any?
+    end
+
     def message
       msg = @statuses.empty? ?
         "[#{@time.to_s}] Normal status" :

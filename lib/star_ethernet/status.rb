@@ -1,7 +1,7 @@
 require 'star_ethernet/status_item'
 
 module StarEthernet
-  class StarEthernet::Status
+  class Status
     attr_reader :status_items
 
     def initialize(printer)

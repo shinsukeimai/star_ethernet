@@ -46,6 +46,24 @@ RSpec.describe StarEthernet::StatusItem do
     end
   end
 
+  describe '#unhealty_status?' do
+    context 'when printer has some errors' do
+      let(:status_item) { StarEthernet::StatusItem.new(statuses: [StarEthernet::StatusItem::PrinterStatus::Offline]) }
+
+      it 'return true' do
+        expect(status_item.unhealthy?).to eq(true)
+      end
+    end
+
+    context 'when printer has no error' do
+      let(:status_item) { StarEthernet::StatusItem.new(statuses: [StarEthernet::StatusItem::PrinterStatus::EtbCommandExecuted]) }
+
+      it 'return false' do
+        expect(status_item.unhealthy?).to eq(false)
+      end
+    end
+  end
+
   describe '.decode_status' do
     context 'when etb is set' do
       it 'returns status_item which etb is set' do
