@@ -64,6 +64,24 @@ RSpec.describe StarEthernet::StatusItem do
     end
   end
 
+  describe '#need_to_change_paper?' do
+    context 'when printer has any sensor statuses' do
+      let(:status_item) { StarEthernet::StatusItem.new(statuses: [StarEthernet::StatusItem::SensorStatus::PaperEnd]) }
+
+      it 'returns true' do
+        expect(status_item.need_to_change_paper?).to eq(true)
+      end
+    end
+
+    context 'when printer has no sensor status' do
+      let(:status_item) { StarEthernet::StatusItem.new }
+
+      it 'returns false' do
+        expect(status_item.need_to_change_paper?).to eq(false)
+      end
+    end
+  end
+
   describe '.decode_status' do
     context 'when etb is set' do
       it 'returns status_item which etb is set' do
