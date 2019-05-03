@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    star_ethernet (0.1.11)
+    star_ethernet (0.1.12)
       net-telnet
 
 GEM
