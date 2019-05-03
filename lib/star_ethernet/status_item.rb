@@ -20,7 +20,11 @@ module StarEthernet
     end
 
     def unhealthy?
-      @statuses.reject{ |s| s.== PrinterStatus::EtbCommandExecuted}.any?
+      @statuses.reject{ |s| s == PrinterStatus::EtbCommandExecuted}.any?
+    end
+
+    def need_to_change_paper?
+      @statuses.any? { |s| [SensorStatus::PaperEnd, SensorStatus::PaperNearInsideEnd, SensorStatus::PaperNearOutsideEnd].include?(s)}
     end
 
     def message
